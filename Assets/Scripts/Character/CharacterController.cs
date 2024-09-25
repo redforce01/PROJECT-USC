@@ -13,16 +13,27 @@ namespace USC
             character = GetComponent<CharacterBase>();
         }
 
+        private void Start()
+        {
+            InputSystem.Instance.OnClickSpace += CommandJump;
+            InputSystem.Instance.OnClickLeftMouseButton += CommandAttack;
+        }
+
         private void Update()
         {
-            float inputX = Input.GetAxis("Horizontal");
-            float inputY = Input.GetAxis("Vertical");
-            Vector2 input = new Vector2(inputX, inputY);
+            character.Move(InputSystem.Instance.Movement);
+            character.Rotate(InputSystem.Instance.Look.x);
+            character.SetRunning(InputSystem.Instance.IsLeftShift);
+        }
 
-            bool isLeftShiftPressed = Input.GetKey(KeyCode.LeftShift);
+        private void CommandJump()
+        {
+            character.Jump();
+        }
 
-            character.Move(input);
-            character.SetRunning(isLeftShiftPressed);
+        private void CommandAttack()
+        {
+            character.Attack();
         }
     }
 }

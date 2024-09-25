@@ -1,63 +1,72 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace USC
 {
     public class InputSystem : MonoBehaviour
     {
-        void Update()
-        {
-            // Input.GetKey 는 Keycode의 Key를 계속 누르고 있으면 True => 누르고 있으면 계속 TRUE
-            // Input.GetKeyDown 은 Keycode의 Key를 누르는 순간 True => 누르는 순간 딱 1번만 TRUE
-            // Input.GetKeyUp 은 Keycode의 Key를 누르고 뗄 때 True => 누르고 뗄 때 딱 1번만 TRUE
+        public static InputSystem Instance { get; private set; }
 
-            if (Input.GetKey(KeyCode.Space))
+        public Vector2 Movement => movement;
+        public Vector2 Look => look;
+        public bool IsLeftShift => isLeftShift;
+
+        private Vector2 movement;
+        private Vector2 look;
+        private bool isLeftShift;
+        private bool isShowCursor = false;
+
+        public System.Action OnClickSpace;
+        public System.Action OnClickLeftMouseButton;
+
+        private void Awake()
+        {
+            Instance = this;
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
+        private void OnDestroy()
+        {
+            Instance = null;
+        }
+
+        private void Update()
+        {
+            if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log("Space Key is Pressed");
+                OnClickLeftMouseButton?.Invoke();
             }
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                Debug.Log("Space Key is Down");
+                OnClickSpace?.Invoke();
             }
 
-            if (Input.GetKeyUp(KeyCode.Space))
+            isShowCursor = Input.GetKey(KeyCode.LeftAlt);
+            if (isShowCursor)
             {
-                Debug.Log("Space Key is Up");
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
             }
-
-            // Input.GetMouseButton(0) 에서 "0" 의 의미는 마우스 LeftButton을 의미한다.
-            //  => 0 : Left Button, 1 : Right Button, 2 : Middle Button
-            // Input.GetMouseButton(0) 은 Left Button이 Pressed 되어 있으면 True
-            // Input.GetMouseButtonDown(0) 은 Left Button이 Down 될 때 딱 1번만 True
-            // Input.GetMouseButtonUp(0) 은 Left Button이 Up 될 때 딱 1번만 True
-
-            if (Input.GetMouseButton(0))
+            else
             {
-                Debug.Log("Mouse Button 0 is Pressed");
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
             }
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                Debug.Log("Mouse Button 0 is Down");
-            }
+            float inputX = Input.GetAxis("Horizontal");
+            float inputY = Input.GetAxis("Vertical");
+            movement = new Vector2(inputX, inputY);
 
-            if (Input.GetMouseButtonUp(0))
-            {
-                Debug.Log("Mouse Button 0 is Up");
-            }
+            float lookX = Input.GetAxis("Mouse X");
+            float lookY = Input.GetAxis("Mouse Y");
+            look = isShowCursor ? Vector2.zero : new Vector2(lookX, lookY);
 
-
-            // Input.GetAxis("Horizontal") 은 Horizontal 방향의 값(A or D)을 의미한다.
-            // Input.GetAxis("Vertical") 은 Vertical 방향의 값(W or S)을 의미한다.
-            // TopMenu > Edit > Project Settings 팝업 > Input Manager > Axes 에서 Horizontal, Vertical을 확인할 수 있다.
-
-            float horizontal = Input.GetAxis("Horizontal");
-            float vertical = Input.GetAxis("Vertical");
-
-            Debug.Log("Horizontal: " + horizontal);
-            Debug.Log("Vertical: " + vertical);
+            isLeftShift = Input.GetKey(KeyCode.LeftShift);
         }
     }
 }
