@@ -7,6 +7,27 @@ namespace USC
 {
     public class CharacterBase : MonoBehaviour
     {
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, sensorRadius);
+
+            for (int i = 0; i < detectedObjects.Count; i++)
+            {
+                Gizmos.color = Color.green;
+                Vector3 startPos = transform.position + Vector3.up;
+                Vector3 endPos = detectedObjects[i].transform.position;
+
+                Gizmos.DrawLine(startPos, endPos);
+            }
+        }
+
+        public float sensorRadius = 1f;
+        public Collider[] overlappedObjects;
+        public LayerMask sensorLayer;
+        public List<Collider> detectedObjects = new List<Collider>();
+        public float sensorAngle = 90f;
+
         public Animator characterAnimator;
         public CharacterStatData characterStat;
 
@@ -22,7 +43,29 @@ namespace USC
         }
 
         private void Update()
-        {
+        {   
+            overlappedObjects = Physics.OverlapSphere(transform.position, sensorRadius, sensorLayer);
+            detectedObjects.Clear();
+            for (int i = 0; i < overlappedObjects.Length; i++)
+            {
+                Vector3 direction = overlappedObjects[i].transform.position - transform.position;
+                float dot = Vector3.Dot(transform.forward.normalized, direction.normalized);
+                if (dot > Mathf.Cos(sensorAngle * 0.5f * Mathf.Deg2Rad))
+                {
+                    Vector3 rayStartPos = transform.position + Vector3.up;
+                    Vector3 rayDirection = overlappedObjects[i].transform.position - transform.position;
+                    rayDirection.y = 0;
+
+                    if (Physics.Raycast(rayStartPos, rayDirection, out RaycastHit hitInfo, sensorRadius, sensorLayer))
+                    {
+                        if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Character"))
+                        {
+                            detectedObjects.Add(overlappedObjects[i]);
+                        }
+                    }
+                }                
+            }
+
             CheckGround();
             FreeFall();
 
