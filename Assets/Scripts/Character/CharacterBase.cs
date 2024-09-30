@@ -29,6 +29,7 @@ namespace USC
         public float sensorAngle = 90f;
 
         public Animator characterAnimator;
+        public UnityEngine.CharacterController unityCharacterController;
         public CharacterStatData characterStat;
 
         public Vector2 movement;
@@ -40,39 +41,27 @@ namespace USC
         private void Awake()
         {
             characterAnimator = GetComponent<Animator>();
+            unityCharacterController = GetComponent<UnityEngine.CharacterController>();
         }
 
         private void Update()
-        {   
-            overlappedObjects = Physics.OverlapSphere(transform.position, sensorRadius, sensorLayer);
-            detectedObjects.Clear();
-            for (int i = 0; i < overlappedObjects.Length; i++)
-            {
-                Vector3 direction = overlappedObjects[i].transform.position - transform.position;
-                float dot = Vector3.Dot(transform.forward.normalized, direction.normalized);
-                if (dot > Mathf.Cos(sensorAngle * 0.5f * Mathf.Deg2Rad))
-                {
-                    Vector3 rayStartPos = transform.position + Vector3.up;
-                    Vector3 rayDirection = overlappedObjects[i].transform.position - transform.position;
-                    rayDirection.y = 0;
-
-                    if (Physics.Raycast(rayStartPos, rayDirection, out RaycastHit hitInfo, sensorRadius, sensorLayer))
-                    {
-                        if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Character"))
-                        {
-                            detectedObjects.Add(overlappedObjects[i]);
-                        }
-                    }
-                }                
-            }
-
+        {
             CheckGround();
             FreeFall();
 
             Vector3 moveVec = new Vector3(movementBlend.x, verticalVelocity, movementBlend.y);
 
             float targetSpeed = isRunning ? characterStat.RunSpeed : characterStat.WalkSpeed;
-            transform.Translate(targetSpeed * moveVec * Time.deltaTime, Space.Self);
+            //transform.Translate(targetSpeed * moveVec * Time.deltaTime, Space.Self);
+
+            Vector3 cameraForward = Camera.main.transform.forward.normalized;
+            cameraForward.y = 0;
+            Vector3 cameraRight = Camera.main.transform.right.normalized;
+            cameraRight.y = 0;
+            Vector3 resultMovement = cameraForward * moveVec.z + cameraRight * moveVec.x;
+            resultMovement.y = verticalVelocity;
+
+            unityCharacterController.Move(resultMovement * targetSpeed * Time.deltaTime);
 
             runningBlend = Mathf.Lerp(runningBlend, isRunning ? 1f : 0f, Time.deltaTime * 10f);
 
@@ -137,7 +126,7 @@ namespace USC
             {
                 if (jumpTimeoutDelta > 0)
                 {
-                   
+
                 }
                 else
                 {
@@ -155,9 +144,56 @@ namespace USC
             characterAnimator.SetBool("IsGrounded", isGrounded);
         }
 
+
+        public float attackRange = 3f;
+        public float attackAngle = 80f;
+        public float attackDamage = 10f;
+        public LayerMask characterLayer;
+        public LayerMask detectLayer;
+
         public void Attack()
         {
             characterAnimator.SetTrigger("AttackTrigger");
+
+            overlappedObjects = Physics.OverlapSphere(transform.position, attackRange, characterLayer);
+            detectedObjects.Clear();
+            for (int i = 0; i < overlappedObjects.Length; i++)
+            {
+                // 오버랩 된 오브젝트의 transform의 루트가 나 자신이라면, continue 해서 다음 루프로 넘어간다.
+                if (overlappedObjects[i].transform.root == this.transform)
+                {
+                    continue;
+                }
+
+                Vector3 direction = overlappedObjects[i].transform.position - transform.position;
+                float dot = Vector3.Dot(transform.forward.normalized, direction.normalized);
+                if (dot > Mathf.Cos(attackAngle * 0.5f * Mathf.Deg2Rad))
+                {
+                    Vector3 rayStartPos = transform.position + Vector3.up;
+                    Vector3 rayDirection = overlappedObjects[i].transform.position - transform.position;
+                    rayDirection.y = 0;
+
+                    if (Physics.Raycast(rayStartPos, rayDirection, out RaycastHit hitInfo, attackRange, detectLayer))
+                    {
+                        if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Character"))
+                        {
+                            detectedObjects.Add(overlappedObjects[i]);
+
+                            //SandbackObject target = hitInfo.transform.GetComponent<SandbackObject>();
+                            //if (target != null)
+                            //{
+                            //    target.ApplyDamage(attackDamage);
+                            //}
+
+                            //if (hitInfo.transform.TryGetComponent(out SandbackObject target))
+                            if (hitInfo.transform.TryGetComponent(out IDamage target))
+                            {
+                                target.ApplyDamage(attackDamage);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
