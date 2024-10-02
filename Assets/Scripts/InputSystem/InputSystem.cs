@@ -20,6 +20,7 @@ namespace USC
 
         public System.Action OnClickSpace;
         public System.Action OnClickLeftMouseButton;
+        public System.Action OnClickInteract;
 
         private void Awake()
         {
@@ -36,6 +37,11 @@ namespace USC
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                OnClickInteract?.Invoke();
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 OnClickLeftMouseButton?.Invoke();
