@@ -9,8 +9,8 @@ namespace USC
     {
         public CharacterBase character;
         public LayerMask interactionLayer;
-       
-
+        public InteractionUI interactionUI;
+        
         private IInteractable[] interactableObjects;
 
         private void Awake()
@@ -23,10 +23,20 @@ namespace USC
             InputSystem.Instance.OnClickSpace += CommandJump;
             InputSystem.Instance.OnClickLeftMouseButton += CommandAttack;
             InputSystem.Instance.OnClickInteract += CommandInteract;
+            InputSystem.Instance.OnMouseScrollWheel += CommandMouseScrollWheel;
         }
 
-
-        public InteractionUI interactionUI;
+        public void CommandMouseScrollWheel(float delta)
+        {
+            if (delta > 0)
+            {
+                interactionUI.SelectPrev();
+            }
+            else if (delta < 0)
+            {
+                interactionUI.SelectNext();
+            }
+        }
 
         private void CommandInteract()
         {

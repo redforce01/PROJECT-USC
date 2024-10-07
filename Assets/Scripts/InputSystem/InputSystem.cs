@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace USC
         public System.Action OnClickSpace;
         public System.Action OnClickLeftMouseButton;
         public System.Action OnClickInteract;
+        public System.Action<float> OnMouseScrollWheel;
 
         private void Awake()
         {
@@ -73,6 +75,12 @@ namespace USC
             look = isShowCursor ? Vector2.zero : new Vector2(lookX, lookY);
 
             isLeftShift = Input.GetKey(KeyCode.LeftShift);
+
+            float mouseScroll = Input.GetAxis("Mouse ScrollWheel");
+            if (mouseScroll > 0 || mouseScroll < 0)
+            {
+                OnMouseScrollWheel?.Invoke(mouseScroll);
+            }
         }
     }
 }
