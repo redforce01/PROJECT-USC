@@ -23,6 +23,7 @@ namespace USC
         public System.Action OnClickLeftMouseButton;
         public System.Action OnClickInteract;
         public System.Action<float> OnMouseScrollWheel;
+        public System.Action OnClickThrowButton;
 
         private void Awake()
         {
@@ -39,6 +40,11 @@ namespace USC
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.G))
+            {
+                OnClickThrowButton?.Invoke();
+            }
+
             if (Input.GetKeyDown(KeyCode.F))
             {
                 OnClickInteract?.Invoke();

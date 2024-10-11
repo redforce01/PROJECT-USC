@@ -10,8 +10,9 @@ namespace USC
         public CharacterBase character;
         public LayerMask interactionLayer;
         public InteractionUI interactionUI;
-        
+
         private IInteractable[] interactableObjects;
+
 
         private void Awake()
         {
@@ -24,6 +25,61 @@ namespace USC
             InputSystem.Instance.OnClickLeftMouseButton += CommandAttack;
             InputSystem.Instance.OnClickInteract += CommandInteract;
             InputSystem.Instance.OnMouseScrollWheel += CommandMouseScrollWheel;
+            InputSystem.Instance.OnClickThrowButton += CommandThrow;
+        }
+
+        public Transform throwStartPivot;
+        public GameObject throwObjectPrefab;
+        public LineRenderer throwGuideLineRenderer;
+        private GameObject throwGuideObject;
+        private bool isThrowMode = false;
+        public int guideStep = 30;
+        public float throwPower = 10f;
+        public float throwAngle = 45f;
+
+        public void CommandThrow()
+        {
+            if (isThrowMode)
+            {
+                isThrowMode = false;
+                //TODO : Throw Execute(실행) 코드 작성
+            }
+            else
+            {
+                isThrowMode = true;
+                throwGuideObject = Instantiate(throwObjectPrefab, transform);
+                throwGuideObject.gameObject.SetActive(true);
+                throwGuideObject.transform.SetPositionAndRotation(
+                    throwStartPivot.transform.position, 
+                    throwStartPivot.transform.rotation);
+                Rigidbody guideObjectRigidbody = throwGuideObject.GetComponent<Rigidbody>();
+                guideObjectRigidbody.isKinematic = true;
+
+                //TODO : 가이드 라인을 보여주는 코드 작성
+                // Power : 힘
+                // Angle : 각도
+                float power = throwPower;
+                throwGuideLineRenderer.positionCount = guideStep;
+                for (int i = 0; i < guideStep; i++)
+                {
+                    Vector3 result = CalculateThrowAsTime(power, i * 30f * Time.deltaTime);
+                    throwGuideLineRenderer.SetPosition(i, result);
+                }
+            }
+        }
+
+        public Vector3 CalculateThrowAsTime(float power, float time)
+        {
+            float z = power * Mathf.Cos(throwAngle * Mathf.Deg2Rad) * time;
+            float y = power * Mathf.Sin(throwAngle * Mathf.Deg2Rad) * time;
+
+            float gravity = 9.81f;
+            double newY = y - (0.5 * gravity * Mathf.Pow(time, 2));
+
+            Vector3 result = throwStartPivot.localPosition + new Vector3(0, (float)newY, z);
+            result.x = 0;
+
+            return result;
         }
 
         public void CommandMouseScrollWheel(float delta)
