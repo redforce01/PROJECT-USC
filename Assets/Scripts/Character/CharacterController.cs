@@ -10,6 +10,7 @@ namespace USC
         public CharacterBase character;
         public LayerMask interactionLayer;
         public InteractionUI interactionUI;
+        public IngameUI ingameUI;
 
         private IInteractable[] interactableObjects;
 
@@ -26,6 +27,9 @@ namespace USC
             InputSystem.Instance.OnClickInteract += CommandInteract;
             InputSystem.Instance.OnMouseScrollWheel += CommandMouseScrollWheel;
             InputSystem.Instance.OnClickThrowButton += CommandThrow;
+
+            ingameUI.SetHP(character.CurrentHP, character.MaxHP);
+            ingameUI.SetSP(character.CurrentSP, character.MaxSP);
         }
 
         public Transform throwStartPivot;
@@ -128,6 +132,9 @@ namespace USC
             character.Move(InputSystem.Instance.Movement);
             character.Rotate(InputSystem.Instance.Look.x);
             character.SetRunning(InputSystem.Instance.IsLeftShift);
+
+            ingameUI.SetHP(character.CurrentHP, character.MaxHP);
+            ingameUI.SetSP(character.CurrentSP, character.MaxSP);
         }
 
         private void CommandJump()
