@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 namespace USC
 {
@@ -28,8 +29,8 @@ namespace USC
             InputSystem.Instance.OnMouseScrollWheel += CommandMouseScrollWheel;
             InputSystem.Instance.OnClickThrowButton += CommandThrow;
 
-            ingameUI.SetHP(character.CurrentHP, character.MaxHP);
-            ingameUI.SetSP(character.CurrentSP, character.MaxSP);
+            //ingameUI.SetHP(character.CurrentHP, character.MaxHP);
+            //ingameUI.SetSP(character.CurrentSP, character.MaxSP);
         }
 
         public Transform throwStartPivot;
@@ -129,22 +130,27 @@ namespace USC
         {
             CheckOverlapInteractionObject();
 
-            character.Move(InputSystem.Instance.Movement);
+            character.Move(InputSystem.Instance.Movement, Camera.main.transform.eulerAngles.y);
             character.Rotate(InputSystem.Instance.Look.x);
-            character.SetRunning(InputSystem.Instance.IsLeftShift);
+            character.IsRun = InputSystem.Instance.IsLeftShift;
 
-            ingameUI.SetHP(character.CurrentHP, character.MaxHP);
-            ingameUI.SetSP(character.CurrentSP, character.MaxSP);
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                character.SetArmed(!character.IsArmed);
+            }
+
+            //ingameUI.SetHP(character.CurrentHP, character.MaxHP);
+            //ingameUI.SetSP(character.CurrentSP, character.MaxSP);
         }
 
         private void CommandJump()
         {
-            character.Jump();
+            //character.Jump();
         }
 
         private void CommandAttack()
         {
-            character.Attack();
+            //character.Attack();
         }
     }
 }
