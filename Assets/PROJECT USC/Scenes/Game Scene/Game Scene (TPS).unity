@@ -5517,7 +5517,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 2073944099}
   firePoint: {fileID: 871158003}
-  fireRate: 0.25
+  fireRate: 0.5
   clipSize: 100
 --- !u!1 &1845840692
 GameObject:
