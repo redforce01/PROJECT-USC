@@ -15,6 +15,20 @@ namespace USC
 
         private IInteractable[] interactableObjects;
 
+        public Transform throwStartPivot;
+        public GameObject throwObjectPrefab;
+        public LineRenderer throwGuideLineRenderer;
+        private GameObject throwGuideObject;
+        private bool isThrowMode = false;
+        public int guideStep = 30;
+        public float throwPower = 10f;
+        public float throwAngle = 45f;
+
+        public float bottomClamp = -90f;
+        public float topClamp = 90f;
+        public Transform cameraPivot;
+        private float targetYaw;
+        private float targetPitch;
 
         private void Awake()
         {
@@ -24,7 +38,10 @@ namespace USC
         private void Start()
         {
             InputSystem.Instance.OnClickSpace += CommandJump;
-            InputSystem.Instance.OnClickLeftMouseButton += CommandAttack;
+            //InputSystem.Instance.OnClickLeftMouseButtonDown += CommandAttack;
+            InputSystem.Instance.OnClickLeftMouseButtonDown += CommandFireStart;
+            InputSystem.Instance.OnClickLeftMouseButtonUp += CommandFireStop;
+
             InputSystem.Instance.OnClickInteract += CommandInteract;
             InputSystem.Instance.OnMouseScrollWheel += CommandMouseScrollWheel;
             InputSystem.Instance.OnClickThrowButton += CommandThrow;
@@ -33,14 +50,49 @@ namespace USC
             //ingameUI.SetSP(character.CurrentSP, character.MaxSP);
         }
 
-        public Transform throwStartPivot;
-        public GameObject throwObjectPrefab;
-        public LineRenderer throwGuideLineRenderer;
-        private GameObject throwGuideObject;
-        private bool isThrowMode = false;
-        public int guideStep = 30;
-        public float throwPower = 10f;
-        public float throwAngle = 45f;
+        private void CommandFireStart()
+        {
+            character.Shoot(true);
+        }
+
+        private void CommandFireStop()
+        {
+            character.Shoot(false);
+        }
+
+
+        private void Update()
+        {
+            CheckOverlapInteractionObject();
+
+            character.Move(InputSystem.Instance.Movement, Camera.main.transform.eulerAngles.y);
+
+            if (character.IsArmed)
+            {
+                character.Rotate(InputSystem.Instance.Look.x);
+            }
+
+            character.IsRun = InputSystem.Instance.IsLeftShift;
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                character.SetArmed(!character.IsArmed);
+
+                if (character.IsArmed)
+                {
+                    float differAngle = Camera.main.transform.eulerAngles.y - character.transform.eulerAngles.y;
+                    character.Rotate(differAngle);
+                }
+            }
+
+            //ingameUI.SetHP(character.CurrentHP, character.MaxHP);
+            //ingameUI.SetSP(character.CurrentSP, character.MaxSP);
+        }
+
+        private void LateUpdate()
+        {
+            CameraRotation();
+        }
 
         public void CommandThrow()
         {
@@ -126,21 +178,27 @@ namespace USC
             interactionUI.SetInteractableObjects(interactableObjects);
         }
 
-        private void Update()
+        private void CameraRotation()
         {
-            CheckOverlapInteractionObject();
-
-            character.Move(InputSystem.Instance.Movement, Camera.main.transform.eulerAngles.y);
-            character.Rotate(InputSystem.Instance.Look.x);
-            character.IsRun = InputSystem.Instance.IsLeftShift;
-
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            if (InputSystem.Instance.Look.sqrMagnitude > 0f)
             {
-                character.SetArmed(!character.IsArmed);
+                float yaw = InputSystem.Instance.Look.x;
+                float pitch = InputSystem.Instance.Look.y;
+
+                targetYaw += yaw;
+                targetPitch += pitch;
             }
 
-            //ingameUI.SetHP(character.CurrentHP, character.MaxHP);
-            //ingameUI.SetSP(character.CurrentSP, character.MaxSP);
+            targetYaw = ClampAngle(targetYaw, float.MinValue, float.MaxValue);
+            targetPitch = ClampAngle(targetPitch, bottomClamp, topClamp);
+            cameraPivot.rotation = Quaternion.Euler(targetPitch, targetYaw, 0f);
+        }
+
+        private float ClampAngle(float lfAngle, float lfMin, float lfMax)
+        {
+            if (lfAngle < -360f) lfAngle += 360f;
+            if (lfAngle > 360f) lfAngle -= 360f;
+            return Mathf.Clamp(lfAngle, lfMin, lfMax);
         }
 
         private void CommandJump()

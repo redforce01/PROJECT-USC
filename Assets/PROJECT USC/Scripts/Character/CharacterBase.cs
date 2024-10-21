@@ -20,6 +20,14 @@ namespace USC
         public float runningBlend;
 
         public GameObject weaponHolder;
+        public WeaponBase currentWeapon;
+
+        private bool isShooting = false;
+
+        public void Shoot(bool isShoot)
+        {
+            isShooting = isShoot;
+        }
 
         public void SetArmed(bool isArmed)
         {
@@ -36,6 +44,11 @@ namespace USC
 
         private void Update()
         {
+            if (isShooting)
+            {
+                currentWeapon.Fire();
+            }
+
             armed = Mathf.Lerp(armed, IsArmed ? 1f : 0f, Time.deltaTime * 10f);
             runningBlend = Mathf.Lerp(runningBlend, IsRun ? 1f : 0f, Time.deltaTime * 10f);
 
@@ -64,14 +77,14 @@ namespace USC
             }
             else
             {
-                targetRotation = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + yAxisAngle;
-                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref rotationSpeed, 0.1f);
-                transform.rotation = Quaternion.Euler(0f, rotation, 0f);
-
                 if (input.magnitude > 0f)
                 {
-                    unityCharacterController.Move(transform.forward * Time.deltaTime * moveSpeed);
+                    targetRotation = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + yAxisAngle;
+                    float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref rotationSpeed, 0.1f);
+                    transform.rotation = Quaternion.Euler(0f, rotation, 0f);
                 }
+
+                unityCharacterController.Move(transform.forward * speed * Time.deltaTime * moveSpeed);
             }
         }
 
