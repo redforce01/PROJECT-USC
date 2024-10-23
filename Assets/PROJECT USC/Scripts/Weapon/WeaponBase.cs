@@ -6,6 +6,9 @@ namespace USC
 {
     public class WeaponBase : MonoBehaviour
     {
+        public int RemainAmmo => currentAmmo; // 현재 탄창의 남은 총알 수를 반환하는 프로퍼티
+
+
         public Projectile bulletPrefab; // 총알 프리팹 객체 - 발사 시 => 복사할 총알의 원본 GameObject
         public Transform firePoint; // 총알 발사 위치+방향을 의미하는 Transform
 
@@ -31,9 +34,17 @@ namespace USC
 
             lastFireTime = Time.time;
 
-            // currentAmmo--;
+            currentAmmo--;
+
+            // Muzzle Effect 출력
+            EffectManager.Instance.CreateEffect(EffectType.Muzzle_01, firePoint.position, firePoint.rotation);
 
             return true;
+        }
+
+        public void Reload()
+        {
+            currentAmmo = clipSize;
         }
     }
 }

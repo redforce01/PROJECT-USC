@@ -30,6 +30,39 @@ namespace USC
                 "<color=yellow> Bullet Impact !! </color> " +
                 $"name : <color=red>{collision.gameObject.name}</color>");
 
+            if (collision.gameObject.layer == LayerMask.NameToLayer("Character"))
+            {
+                Quaternion rotation = Quaternion.LookRotation(collision.contacts[0].normal);
+                EffectManager.Instance.CreateEffect(EffectType.Impact_Wood, collision.contacts[0].point, rotation);
+
+                if (collision.transform.root.TryGetComponent(out IDamage damageInterface))
+                {
+                    damageInterface.ApplyDamage(10);
+                }
+            }
+            else // 캐릭터가 아닌 것에 부딪쳤을 때 ?
+            {
+                EffectType targetEffectType = EffectType.Impact_Dirt;
+                Vector3 position = collision.contacts[0].point;
+                Quaternion rotation = Quaternion.LookRotation(collision.contacts[0].normal);
+
+                if (collision.collider.material.name.Contains("Wood"))
+                {
+                    targetEffectType = EffectType.Impact_Wood;
+                }
+                else if (collision.collider.material.name.Contains("Metal"))
+                {
+                    targetEffectType = EffectType.Impact_Metal;
+                }
+                else if (collision.collider.material.name.Contains("Concrete"))
+                {
+                    targetEffectType = EffectType.Impact_Concrete;
+                }
+
+
+                EffectManager.Instance.CreateEffect(targetEffectType, position, rotation);
+            }
+
             Destroy(gameObject);
         }
     }

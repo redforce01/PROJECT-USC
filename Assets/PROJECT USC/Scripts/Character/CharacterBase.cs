@@ -23,6 +23,7 @@ namespace USC
         public WeaponBase currentWeapon;
 
         private bool isShooting = false;
+        private bool isReloading = false;
 
         public void Shoot(bool isShoot)
         {
@@ -46,7 +47,14 @@ namespace USC
         {
             if (isShooting)
             {
-                currentWeapon.Fire();
+                bool isFireSuccess = currentWeapon.Fire();
+                if (false == isFireSuccess)
+                {
+                    if (currentWeapon.RemainAmmo <= 0 && false == isReloading)
+                    {
+                        Reload();
+                    }
+                }
             }
 
             armed = Mathf.Lerp(armed, IsArmed ? 1f : 0f, Time.deltaTime * 10f);
@@ -92,6 +100,18 @@ namespace USC
         {
             float rotation = transform.rotation.eulerAngles.y + angle;
             transform.rotation = Quaternion.Euler(0, rotation, 0);
+        }
+
+        public void Reload()
+        {
+            isReloading = true;
+            characterAnimator.SetTrigger("Reload Trigger");
+        }
+
+        public void ReloadComplete()
+        {
+            currentWeapon.Reload();
+            isReloading = false;
         }
     }
 }
