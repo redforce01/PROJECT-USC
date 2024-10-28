@@ -11,13 +11,24 @@ namespace USC
 
     public class CameraSystem : MonoBehaviour
     {
+        public static CameraSystem Instance { get; private set; } = null;
+
         // 각각의 VirtualCamera GameObject
         public Cinemachine.CinemachineVirtualCamera tpsCamera;
         public Cinemachine.CinemachineVirtualCamera quaterCamera;
         public Cinemachine.CinemachineVirtualCamera fpsCamera;
 
+        public Vector3 AimingPoint { get; private set; }
+
+        public LayerMask aimingLayerMask;
+
         private CameraType currentCameraType = CameraType.TPS;
         private bool isZoom = false;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         public void ChangeCameraType(CameraType newType)
         {
@@ -69,7 +80,20 @@ namespace USC
 
             float targetFov = isZoom ? 20f : 60f;
             tpsCamera.m_Lens.FieldOfView = Mathf.Lerp(tpsCamera.m_Lens.FieldOfView, targetFov, Time.deltaTime * 5);
+
+            // Aiming Point 계산
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 1f));
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, 1000f, aimingLayerMask, 
+                QueryTriggerInteraction.Ignore))
+            {
+                AimingPoint = hitInfo.point;
+            }
+            else
+            {
+                AimingPoint = ray.GetPoint(100f);
+            }
         }
+
     }    
 }
 

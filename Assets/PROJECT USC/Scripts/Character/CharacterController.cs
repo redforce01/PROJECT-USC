@@ -70,6 +70,7 @@ namespace USC
             if (character.IsArmed)
             {
                 character.Rotate(InputSystem.Instance.Look.x);
+                character.AimingPoint = CameraSystem.Instance.AimingPoint;
             }
 
             character.IsRun = InputSystem.Instance.IsLeftShift;
