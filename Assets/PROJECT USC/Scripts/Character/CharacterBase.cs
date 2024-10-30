@@ -10,6 +10,7 @@ namespace USC
     {
         public Animator characterAnimator;
         public UnityEngine.CharacterController unityCharacterController;
+        public RigBuilder rigBuilder;
         public Rig aimRig;
         public Rig leftHandRig;
 
@@ -28,6 +29,7 @@ namespace USC
         public float vertical;
         public float runningBlend;
 
+        public Transform weaponSocket;
         public GameObject weaponHolder;
         public WeaponBase currentWeapon;
         public Transform aimingPointTransform;
@@ -56,17 +58,29 @@ namespace USC
         public void SetEquipState(int equipState)
         {
             bool isEquip = equipState == 1;
-            weaponHolder.SetActive(isEquip);
+            if (isEquip)
+            {
+                currentWeapon.transform.SetParent(weaponHolder.transform);
+                currentWeapon.transform.localPosition = Vector3.zero;
+                currentWeapon.transform.localRotation = Quaternion.Euler(0, -90, 0);
+            }
+            else
+            {
+                currentWeapon.transform.SetParent(weaponSocket.transform);
+                currentWeapon.transform.localPosition = Vector3.zero;
+                currentWeapon.transform.localRotation = Quaternion.identity;
+            }
+
             aimRig.weight = isEquip ? 1f : 0f;
             leftHandRig.weight = isEquip ? 1f : 0f;
         }
 
         private void Awake()
         {
+            rigBuilder = GetComponent<RigBuilder>();
             characterAnimator = GetComponent<Animator>();
             unityCharacterController = GetComponent<UnityEngine.CharacterController>();
 
-            weaponHolder.SetActive(false);
             aimRig.weight = 0f;
             leftHandRig.weight = 0f;
         }
@@ -143,12 +157,7 @@ namespace USC
             leftHandRig.weight = 1f;
             isReloading = false;
 
-            Invoke(nameof(InvokeLeftHandRigActive), 0.01f);
-        }
-
-        void InvokeLeftHandRigActive()
-        {
-            leftHandRig.weight = 1f;
+            rigBuilder.Build();
         }
     }
 }
