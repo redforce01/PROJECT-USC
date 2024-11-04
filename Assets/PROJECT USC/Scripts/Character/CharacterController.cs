@@ -46,6 +46,8 @@ namespace USC
             InputSystem.Instance.OnMouseScrollWheel += CommandMouseScrollWheel;
             InputSystem.Instance.OnClickThrowButton += CommandThrow;
 
+            CameraSystem.Instance.SetCameraFollowTarget(character.cameraPivot);
+
             //ingameUI.SetHP(character.CurrentHP, character.MaxHP);
             //ingameUI.SetSP(character.CurrentSP, character.MaxSP);
         }
@@ -187,7 +189,7 @@ namespace USC
                 float pitch = InputSystem.Instance.Look.y;
 
                 targetYaw += yaw;
-                targetPitch += pitch;
+                targetPitch -= pitch;
             }
 
             targetYaw = ClampAngle(targetYaw, float.MinValue, float.MaxValue);

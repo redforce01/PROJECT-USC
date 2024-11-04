@@ -13,6 +13,13 @@ namespace USC
     {
         public static CameraSystem Instance { get; private set; } = null;
 
+
+        public void SetCameraFollowTarget(Transform target)
+        {
+            tpsCamera.Follow = target;
+            tpsCamera.LookAt = target;
+        }
+
         // °¢°¢ÀÇ VirtualCamera GameObject
         public Cinemachine.CinemachineVirtualCamera tpsCamera;
         public Cinemachine.CinemachineVirtualCamera quaterCamera;

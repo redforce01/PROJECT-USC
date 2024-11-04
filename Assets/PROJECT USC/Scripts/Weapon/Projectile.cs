@@ -12,13 +12,16 @@ namespace USC
 
         private void Start()
         {
+            Rigidbody rigid = GetComponent<Rigidbody>();
+            rigid.AddForce(transform.forward * speed, ForceMode.Impulse);
+
             Destroy(gameObject, lifeTime); // 본인 GameObject를 LifeTime 이후에 파괴 되도록 명령
         }
 
-        private void Update()
-        {
-            transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
-        }
+        //private void Update()
+        //{
+        //    transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);
+        //}
 
         private void OnCollisionEnter(Collision collision)
         {

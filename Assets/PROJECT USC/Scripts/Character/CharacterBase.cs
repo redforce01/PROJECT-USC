@@ -6,13 +6,17 @@ using UnityEngine.Animations.Rigging;
 
 namespace USC
 {
-    public class CharacterBase : MonoBehaviour
+    public class CharacterBase : MonoBehaviour, IDamage
     {
         public Animator characterAnimator;
         public UnityEngine.CharacterController unityCharacterController;
         public RigBuilder rigBuilder;
         public Rig aimRig;
         public Rig leftHandRig;
+        public Transform cameraPivot;
+
+        public CharacterStatData maxStat;
+        public CharacterStatData curStat;
 
         public bool IsArmed { get; set; } = false;
         public bool IsRun { get; set; } = false;
@@ -36,6 +40,13 @@ namespace USC
 
         private bool isShooting = false;
         private bool isReloading = false;
+        private bool isEquipped = false;
+        
+
+        public float moveSpeed = 3f;
+        public float targetRotation = 0f;
+        public float rotationSpeed = 0.1f;
+
 
         public void Shoot(bool isShoot)
         {
@@ -70,9 +81,8 @@ namespace USC
                 currentWeapon.transform.localPosition = Vector3.zero;
                 currentWeapon.transform.localRotation = Quaternion.identity;
             }
-
-            aimRig.weight = isEquip ? 1f : 0f;
-            leftHandRig.weight = isEquip ? 1f : 0f;
+            
+            isEquipped = isEquip;
         }
 
         private void Awake()
@@ -83,10 +93,21 @@ namespace USC
 
             aimRig.weight = 0f;
             leftHandRig.weight = 0f;
+
+            curStat = ScriptableObject.CreateInstance<CharacterStatData>();
+            curStat.HP = maxStat.HP;
+            curStat.SP = maxStat.SP;
+            curStat.WalkSpeed = maxStat.WalkSpeed;
+            curStat.RunSpeed = maxStat.RunSpeed;
+            curStat.RunStaminaCost = maxStat.RunStaminaCost;
+            curStat.StaminaRecoverySpeed = maxStat.StaminaRecoverySpeed;
         }
 
         private void Update()
         {
+            CheckGround();
+            FreeFall();
+
             if (isShooting)
             {
                 bool isFireSuccess = currentWeapon.Fire();
@@ -107,12 +128,34 @@ namespace USC
             characterAnimator.SetFloat("Horizontal", horizontal);
             characterAnimator.SetFloat("Vertical", vertical);
             characterAnimator.SetFloat("RunningBlend", runningBlend);
+
+            aimRig.weight = isEquipped ? 1f : 0f;
+            leftHandRig.weight = isEquipped && !isReloading ? 1f : 0f;
         }
 
+        private float verticalVelocity = 0f;
+        private bool isGrounded = false;
+        public float groundOffset = 0.1f;
+        public float checkRadius = 0.1f;
+        public LayerMask groundLayers;
 
-        public float moveSpeed = 3f;
-        public float targetRotation = 0f;
-        public float rotationSpeed = 0.1f;
+        public void CheckGround()
+        {
+            Ray ray = new Ray(transform.position + (Vector3.up * groundOffset), Vector3.down);
+            isGrounded = Physics.SphereCast(ray, checkRadius, 0.1f, groundLayers);
+        }
+
+        public void FreeFall()
+        {
+            if (!isGrounded)
+            {
+                verticalVelocity = Mathf.Lerp(verticalVelocity, -9.8f, Time.deltaTime);
+            }
+            else
+            {
+                verticalVelocity = 0f;
+            }
+        }
 
         public void Move(Vector2 input, float yAxisAngle)
         {
@@ -120,10 +163,10 @@ namespace USC
             vertical = input.y;
             speed = input.magnitude > 0f ? 1f : 0f;
 
+            Vector3 movement = Vector3.zero;
             if (IsArmed)
             {
-                Vector3 movement = transform.forward * vertical + transform.right * horizontal;
-                unityCharacterController.Move(movement * Time.deltaTime * moveSpeed);
+                movement = transform.forward * vertical + transform.right * horizontal;
             }
             else
             {
@@ -134,8 +177,12 @@ namespace USC
                     transform.rotation = Quaternion.Euler(0f, rotation, 0f);
                 }
 
-                unityCharacterController.Move(transform.forward * speed * Time.deltaTime * moveSpeed);
+                movement = transform.forward * speed;
             }
+
+            movement.y = verticalVelocity;
+
+            unityCharacterController.Move(movement * Time.deltaTime * moveSpeed);
         }
 
         public void Rotate(float angle)
@@ -158,6 +205,17 @@ namespace USC
             isReloading = false;
 
             rigBuilder.Build();
+        }
+
+        public void ApplyDamage(float damage)
+        {
+            curStat.HP -= damage;
+
+            if (curStat.HP <= 0)
+            {
+                //TODO : 캐릭터 죽음 처리
+
+            }
         }
     }
 }
