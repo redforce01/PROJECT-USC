@@ -8,13 +8,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1213659724471510164, guid: d3a90f31d69b7d14393684308685d787, type: 3}
+      propertyPath: spread
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2633229755690628732, guid: d3a90f31d69b7d14393684308685d787, type: 3}
       propertyPath: m_Name
-      value: USC.Character [NPC] Variant
+      value: USC.Character [NPC]
       objectReference: {fileID: 0}
     - target: {fileID: 7789565163494926264, guid: d3a90f31d69b7d14393684308685d787, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -26.07
       objectReference: {fileID: 0}
     - target: {fileID: 7789565163494926264, guid: d3a90f31d69b7d14393684308685d787, type: 3}
       propertyPath: m_LocalPosition.y
@@ -22,7 +26,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7789565163494926264, guid: d3a90f31d69b7d14393684308685d787, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1
+      value: -8.07
       objectReference: {fileID: 0}
     - target: {fileID: 7789565163494926264, guid: d3a90f31d69b7d14393684308685d787, type: 3}
       propertyPath: m_LocalRotation.w
@@ -59,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2633229755690628732, guid: d3a90f31d69b7d14393684308685d787, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7503715708800658221}
+    - targetCorrespondingSourceObject: {fileID: 2633229755690628732, guid: d3a90f31d69b7d14393684308685d787, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7433997834183188562}
   m_SourcePrefab: {fileID: 100100000, guid: d3a90f31d69b7d14393684308685d787, type: 3}
 --- !u!1 &6256670078385849680 stripped
 GameObject:
@@ -77,11 +84,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28bbb1a8315834f46bb63eacf79f68e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  linkedCharacter: {fileID: 0}
+  navAgent: {fileID: 0}
   aiState: 0
-  detectionRadius: 10
+  detectionRadius: 5
   detectionLayers:
     serializedVersion: 2
-    m_Bits: 0
-  patrolWaypoints: []
+    m_Bits: 1024
+  attackValidLayer:
+    serializedVersion: 2
+    m_Bits: 1025
+  patrolWaypoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   currentWaypointIndex: 0
   target: {fileID: 0}
+--- !u!195 &7433997834183188562
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6256670078385849680}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0.1
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4

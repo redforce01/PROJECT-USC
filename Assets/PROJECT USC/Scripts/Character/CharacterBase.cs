@@ -8,16 +8,21 @@ namespace USC
 {
     public class CharacterBase : MonoBehaviour, IDamage
     {
+        public bool IsAlive => curStat.HP > 0;
+
         public Animator characterAnimator;
         public UnityEngine.CharacterController unityCharacterController;
         public RigBuilder rigBuilder;
         public Rig aimRig;
         public Rig leftHandRig;
         public Transform cameraPivot;
+        public Rigidbody[] ragdollRigidbodies;
 
         public CharacterStatData maxStat;
         public CharacterStatData curStat;
 
+        public bool IsNPC { get; set; } = false;
+        public bool IsAimingActive { get; set; } = true;
         public bool IsArmed { get; set; } = false;
         public bool IsRun { get; set; } = false;
         public Vector3 AimingPoint
@@ -47,6 +52,7 @@ namespace USC
         public float targetRotation = 0f;
         public float rotationSpeed = 0.1f;
 
+        public System.Action<float, float> OnDamaged;
 
         public void Shoot(bool isShoot)
         {
@@ -90,6 +96,8 @@ namespace USC
             rigBuilder = GetComponent<RigBuilder>();
             characterAnimator = GetComponent<Animator>();
             unityCharacterController = GetComponent<UnityEngine.CharacterController>();
+            ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
+            SetRagDollActive(false);
 
             aimRig.weight = 0f;
             leftHandRig.weight = 0f;
@@ -103,8 +111,22 @@ namespace USC
             curStat.StaminaRecoverySpeed = maxStat.StaminaRecoverySpeed;
         }
 
+        public void SetRagDollActive(bool isActive)
+        {
+            for(int i = 0; i < ragdollRigidbodies.Length; i++)
+            {
+                ragdollRigidbodies[i].isKinematic = !isActive;
+            }
+
+            unityCharacterController.enabled = !isActive;
+            characterAnimator.enabled = !isActive;
+        }
+
         private void Update()
         {
+            if (!IsAlive)
+                return;
+
             CheckGround();
             FreeFall();
 
@@ -129,7 +151,7 @@ namespace USC
             characterAnimator.SetFloat("Vertical", vertical);
             characterAnimator.SetFloat("RunningBlend", runningBlend);
 
-            aimRig.weight = isEquipped ? 1f : 0f;
+            aimRig.weight = IsAimingActive && isEquipped ? 1f : 0f;
             leftHandRig.weight = isEquipped && !isReloading ? 1f : 0f;
         }
 
@@ -159,6 +181,9 @@ namespace USC
 
         public void Move(Vector2 input, float yAxisAngle)
         {
+            if (!IsAlive)
+                return;
+
             horizontal = input.x;
             vertical = input.y;
             speed = input.magnitude > 0f ? 1f : 0f;
@@ -187,6 +212,9 @@ namespace USC
 
         public void Rotate(float angle)
         {
+            if (!IsAlive)
+                return;
+
             float rotation = transform.rotation.eulerAngles.y + angle;
             transform.rotation = Quaternion.Euler(0, rotation, 0);
         }
@@ -204,7 +232,7 @@ namespace USC
             leftHandRig.weight = 1f;
             isReloading = false;
 
-            rigBuilder.Build();
+            //rigBuilder.Build();
         }
 
         public void ApplyDamage(float damage)
@@ -213,9 +241,23 @@ namespace USC
 
             if (curStat.HP <= 0)
             {
-                //TODO : 캐릭터 죽음 처리
+                isShooting = false;
 
+                //TODO : 캐릭터 죽음 처리                
+                SetRagDollActive(true);
+
+                if (IsNPC)
+                {
+                    Destroy(gameObject, 5f);
+                }
             }
+
+            OnDamaged?.Invoke(maxStat.HP, curStat.HP);
+        }
+
+        public Transform GetBoneTransform(HumanBodyBones bone)
+        {
+            return characterAnimator ? characterAnimator.GetBoneTransform(bone) : transform;
         }
     }
 }

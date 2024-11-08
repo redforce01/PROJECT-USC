@@ -51,6 +51,11 @@ namespace USC
             }
             else // 캐릭터가 아닌 것에 부딪쳤을 때 ?
             {
+                if (collision.transform.TryGetComponent(out IDamage damageInterface))
+                {
+                    damageInterface.ApplyDamage(10);
+                }
+
                 EffectType targetEffectType = EffectType.Impact_Dirt;
                 Vector3 position = collision.contacts[0].point;
                 Quaternion rotation = Quaternion.LookRotation(collision.contacts[0].normal);

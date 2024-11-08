@@ -37,7 +37,8 @@ namespace USC
         public AIState aiState = AIState.Peaceful;
         public float detectionRadius = 10f;
         public LayerMask detectionLayers;
-                
+        public LayerMask attackValidLayer;
+
         public List<Transform> patrolWaypoints = new List<Transform>();
         public int currentWaypointIndex = 0;
 
@@ -54,25 +55,36 @@ namespace USC
         {
             navAgent.speed = linkedCharacter.moveSpeed;
             linkedCharacter.SetArmed(true);
+            linkedCharacter.IsNPC = true;
+
+            SetAiState(AIState.Peaceful);
         }
 
         private void Update()
         {
-            if (navAgent.remainingDistance <= navAgent.stoppingDistance)
+            if (aiState == AIState.Peaceful)
             {
-                OnArrivedDestination();
-            }
+                if (navAgent.remainingDistance <= navAgent.stoppingDistance)
+                {
+                    OnArrivedDestination();
+                }
 
-            if (navAgent.hasPath)
+                if (navAgent.hasPath)
+                {
+                    Vector3 moveDirection = (navAgent.steeringTarget - transform.position).normalized;
+                    Vector3 localDirection = linkedCharacter.transform.InverseTransformDirection(moveDirection);
+                    Vector2 input = new Vector2(localDirection.x, localDirection.z);
+
+                    linkedCharacter.Move(input, 0);
+                    linkedCharacter.transform.forward = moveDirection;
+                }
+
+                UpdateDetecting();
+            }
+            else if (aiState == AIState.Battle)
             {
-                Vector3 moveDirection = (navAgent.steeringTarget - transform.position).normalized;
-                Vector2 input = new Vector2(moveDirection.x, moveDirection.z);
-
-                linkedCharacter.Move(input, 0);
+                UpdateCombat();
             }
-
-            UpdateDetecting();
-            UpdateCombat();
         }
 
         private void UpdateCombat()
@@ -80,20 +92,96 @@ namespace USC
             if (aiState != AIState.Battle || target == null)
                 return;
 
+            if (!target.IsAlive)
+            {
+                target = null;
+                linkedCharacter.Shoot(false);
+                SetAiState(AIState.Peaceful);
+                return;
+            }
+
+
             float distance = Vector3.Distance(transform.position, target.transform.position);
+            float limitDistance = 10f;
+            if (distance > limitDistance)
+            {
+                target = null;
+                linkedCharacter.Shoot(false);
+                SetAiState(AIState.Peaceful);
+                return;
+            }
+
             float weaponRange = 7f;
+
             if (distance > weaponRange)
             {
                 ChaseTarget();
-                linkedCharacter.Shoot(false);
+                UpdateChase();
             }
             else
             {
-                // TODO : Attack
-                float differAngle = Vector3.Angle(transform.forward, target.transform.position - transform.position);
-                linkedCharacter.Rotate(differAngle);
-                linkedCharacter.AimingPoint = target.transform.position;
-                linkedCharacter.Shoot(true);
+                Vector3 pivot = linkedCharacter.transform.position + Vector3.up;
+                Vector3 targetPosition = target.transform.position + Vector3.up;
+                Vector3 direction = (targetPosition - pivot).normalized;
+
+                bool isRaycastSuccessToTarget = false;
+                Ray ray = new Ray(pivot, direction);
+                if (Physics.Raycast(ray, out RaycastHit hitInfo,
+                    weaponRange, attackValidLayer, QueryTriggerInteraction.Ignore))
+                {
+                    if (hitInfo.transform.root.gameObject.CompareTag("Player"))
+                    {
+                        isRaycastSuccessToTarget = true;
+                    }
+                }
+
+                Vector3 weaponFirePoint = linkedCharacter.currentWeapon.firePoint.position;
+                Vector3 directionFromWeapon = (targetPosition - weaponFirePoint).normalized;
+                bool isRaycastSuccessFromWeapon = false;
+                Ray weaponRay = new Ray(weaponFirePoint, directionFromWeapon);
+                if (Physics.Raycast(weaponRay, out RaycastHit weaponHitInfo,
+                    weaponRange, attackValidLayer, QueryTriggerInteraction.Ignore))
+                {
+                    if (weaponHitInfo.transform.root.gameObject.CompareTag("Player"))
+                    {
+                        isRaycastSuccessFromWeapon = true;
+                    }
+                }
+
+                if (isRaycastSuccessToTarget && isRaycastSuccessFromWeapon)
+                {
+                    if (target.IsAlive)
+                    {
+                        // TODO : Attack
+                        Transform targetChestTransform = target.GetBoneTransform(HumanBodyBones.Chest);
+                        linkedCharacter.AimingPoint = targetChestTransform.position;
+                        linkedCharacter.transform.forward = (target.transform.position - transform.position).normalized;
+                        linkedCharacter.Move(Vector2.zero, 0);
+                        linkedCharacter.Shoot(true);
+                    }
+                }
+                else
+                {
+                    linkedCharacter.AimingPoint = transform.position + transform.forward * 100f;
+
+                    ChaseTarget();
+                    UpdateChase();
+                }
+            }
+        }
+
+        private void UpdateChase()
+        {
+            linkedCharacter.Shoot(false);
+
+            if (navAgent.hasPath)
+            {
+                Vector3 moveDirection = (navAgent.steeringTarget - transform.position).normalized;
+                Vector3 localDirection = linkedCharacter.transform.InverseTransformDirection(moveDirection);
+                Vector2 input = new Vector2(localDirection.x, localDirection.z);
+
+                linkedCharacter.Move(input, 0);
+                linkedCharacter.transform.forward = moveDirection;
             }
         }
 
@@ -117,13 +205,22 @@ namespace USC
                 {
                     if (character.gameObject.CompareTag("Player"))
                     {
-                        target = character;
-                        aiState = AIState.Battle;
-                        ChaseTarget();
-                        break;
+                        if (character.IsAlive)
+                        {
+                            target = character;
+                            SetAiState(AIState.Battle);
+                            break;
+                        }
                     }
                 }
             }
+        }
+
+        public void SetAiState(AIState state)
+        {
+            aiState = state;
+            linkedCharacter.IsAimingActive = aiState == AIState.Battle;
+            navAgent.SetDestination(transform.position);
         }
 
         public void SetDestination(Vector3 destination)
@@ -153,16 +250,7 @@ namespace USC
             if (target == null)
                 return;
 
-            float distance = Vector3.Distance(transform.position, target.transform.position);
-            float weaponRange = 7f;
-            if (distance > weaponRange)
-            {
-                SetDestination(target.transform.position);
-            }
-            else
-            {
-                SetDestination(transform.position);
-            }
+            SetDestination(target.transform.position);
         }
     }
 }

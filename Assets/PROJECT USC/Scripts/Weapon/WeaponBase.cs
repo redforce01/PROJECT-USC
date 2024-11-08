@@ -14,6 +14,7 @@ namespace USC
 
         public float fireRate; // 연사 속도 (시간 값) => ex) 0.1: 0.1초에 1발씩 발사 할 수 있는 값
         public int clipSize; // 탄창 크기
+        public float spread = 1f;
 
         private float lastFireTime; // 마지막 발사 실제 시간
         private int currentAmmo; // 현재 탄창의 남은 총알 수
@@ -29,7 +30,13 @@ namespace USC
             if (currentAmmo <= 0 || Time.time - lastFireTime < fireRate)
                 return false;
 
-            Projectile bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            Vector2 randomSpread = Random.insideUnitCircle;
+            Vector2 spreadRotation = randomSpread * spread;
+
+            Projectile bullet = Instantiate(bulletPrefab, 
+                firePoint.position, 
+                firePoint.rotation * Quaternion.Euler(spreadRotation.x, 0f, spreadRotation.y));
+
             bullet.gameObject.SetActive(true);
 
             lastFireTime = Time.time;
