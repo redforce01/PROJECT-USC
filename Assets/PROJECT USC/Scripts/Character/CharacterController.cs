@@ -65,6 +65,16 @@ namespace USC
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                UIManager.Show<ProtoUI_A>(UIList.ProtoUI_A);
+            }
+
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                UIManager.Hide<ProtoUI_A>(UIList.ProtoUI_A);
+            }
+
             CheckOverlapInteractionObject();
 
             character.Move(InputSystem.Instance.Movement, Camera.main.transform.eulerAngles.y);
