@@ -10,9 +10,6 @@ namespace USC
     {
         public CharacterBase character;
         public LayerMask interactionLayer;
-        public InteractionUI interactionUI;
-        public IngameUI ingameUI;
-
         private IInteractable[] interactableObjects;
 
         public Transform throwStartPivot;
@@ -65,16 +62,6 @@ namespace USC
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.O))
-            {
-                UIManager.Show<ProtoUI_A>(UIList.ProtoUI_A);
-            }
-
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                UIManager.Hide<ProtoUI_A>(UIList.ProtoUI_A);
-            }
-
             CheckOverlapInteractionObject();
 
             character.Move(InputSystem.Instance.Movement, Camera.main.transform.eulerAngles.y);
@@ -154,6 +141,7 @@ namespace USC
 
         public void CommandMouseScrollWheel(float delta)
         {
+            var interactionUI = UIManager.Singleton.GetUI<InteractionUI>(UIList.InteractionUI);
             if (delta > 0)
             {
                 interactionUI.SelectPrev();
@@ -168,6 +156,7 @@ namespace USC
         {
             if (interactableObjects != null && interactableObjects.Length > 0)
             {
+                var interactionUI = UIManager.Singleton.GetUI<InteractionUI>(UIList.InteractionUI);
                 interactionUI.Execute();
                 //interactableObjects[0].Interact();
             }
@@ -188,6 +177,7 @@ namespace USC
             }
             interactableObjects = interactables.ToArray();
 
+            var interactionUI = UIManager.Singleton.GetUI<InteractionUI>(UIList.InteractionUI);
             interactionUI.SetInteractableObjects(interactableObjects);
         }
 

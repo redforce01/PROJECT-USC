@@ -4,8 +4,15 @@ namespace USC
     {
         PANEL_START,
 
+        LoadingUI,
+        TitleUI,
+        
+        IngameUI,
+        InteractionUI,
+        CrosshairUI,
+        MinimapUI,
 
-        ProtoUI_A,
+
 
         PANEL_END,
         POPUP_START,

@@ -29,13 +29,21 @@ namespace USC
         private Dictionary<UIList, UIBase> panels = new Dictionary<UIList, UIBase>();
         private Dictionary<UIList, UIBase> popups = new Dictionary<UIList, UIBase>();
 
-        private void Awake()
+        private bool isInitialized = false;
+
+        protected override void Awake()
         {
+            base.Awake();
             Initialize();
         }
 
-        private void Initialize()
+        public void Initialize()
         {
+            if (isInitialized)
+                return;
+
+            isInitialized = true;
+
             if (panelRoot == null)
             {
                 GameObject goPanelRoot = new GameObject("Panel Root");

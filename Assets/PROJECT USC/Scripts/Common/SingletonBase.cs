@@ -41,5 +41,11 @@ namespace USC
 
             return instance;
         });
+
+        protected virtual void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
     }
 }

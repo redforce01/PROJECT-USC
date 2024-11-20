@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace USC
 {
-    public class InteractionUI : MonoBehaviour
+    public class InteractionUI : UIBase
     {
         public Transform group;
         public InteractionUI_ListItem itemPrefab;

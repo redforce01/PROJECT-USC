@@ -6,8 +6,10 @@ using UnityEngine.UI;
 
 namespace USC
 {
-    public class IngameUI : MonoBehaviour
+    public class IngameUI : UIBase
     {
+        public static IngameUI Instance => UIManager.Singleton.GetUI<IngameUI>(UIList.IngameUI);
+
         public Image hpBar;
         public Image spBar;
         public TextMeshProUGUI hpText;

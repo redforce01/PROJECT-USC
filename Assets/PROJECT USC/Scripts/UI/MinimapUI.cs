@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace USC
 {
-    public class ProtoUI_A : UIBase
+    public class MinimapUI : UIBase
     {
 
     }
