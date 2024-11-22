@@ -22,6 +22,8 @@ namespace USC
 
             // Show Title UI
             UIManager.Show<TitleUI>(UIList.TitleUI);
+
+            SoundManager.Singleton.PlayMusic(MusicFileName.BGM_01);
         }
 
         public override IEnumerator OnEnd()

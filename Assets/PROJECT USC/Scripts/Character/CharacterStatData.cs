@@ -7,15 +7,7 @@ namespace USC
     [CreateAssetMenu(fileName = "Character Stat Data", menuName = "USC/Character/Character Stat Data")]
     public class CharacterStatData : ScriptableObject
     {
-        public float HP;
-        public float SP;
-
-        public float WalkSpeed = 1f;
-        public float RunSpeed = 2.5f;
-        
-        public float RunStaminaCost = 3f;
-        public float StaminaRecoverySpeed = 2f;
-
+        public CharacterDataDTO CharacterData = new CharacterDataDTO();
     }
 }
 

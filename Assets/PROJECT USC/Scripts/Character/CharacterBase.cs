@@ -8,7 +8,7 @@ namespace USC
 {
     public class CharacterBase : MonoBehaviour, IDamage
     {
-        public bool IsAlive => curStat.HP > 0;
+        public bool IsAlive => curStat.CharacterData.HP > 0;
 
         public Animator characterAnimator;
         public UnityEngine.CharacterController unityCharacterController;
@@ -102,13 +102,17 @@ namespace USC
             aimRig.weight = 0f;
             leftHandRig.weight = 0f;
 
+            currentWeapon.Owner = this;
+
+            maxStat = GameDataModel.Singleton.PlayerCharacterStatData;
+
             curStat = ScriptableObject.CreateInstance<CharacterStatData>();
-            curStat.HP = maxStat.HP;
-            curStat.SP = maxStat.SP;
-            curStat.WalkSpeed = maxStat.WalkSpeed;
-            curStat.RunSpeed = maxStat.RunSpeed;
-            curStat.RunStaminaCost = maxStat.RunStaminaCost;
-            curStat.StaminaRecoverySpeed = maxStat.StaminaRecoverySpeed;
+            curStat.CharacterData.HP = maxStat.CharacterData.HP;
+            curStat.CharacterData.SP = maxStat.CharacterData.SP;
+            curStat.CharacterData.WalkSpeed = maxStat.CharacterData.WalkSpeed;
+            curStat.CharacterData.RunSpeed = maxStat.CharacterData.RunSpeed;
+            curStat.CharacterData.RunStaminaCost = maxStat.CharacterData.RunStaminaCost;
+            curStat.CharacterData.StaminaRecoverySpeed = maxStat.CharacterData.StaminaRecoverySpeed;
         }
 
         public void SetRagDollActive(bool isActive)
@@ -137,7 +141,7 @@ namespace USC
                 {
                     if (currentWeapon.RemainAmmo <= 0 && false == isReloading)
                     {
-                        Reload();
+                        Reload();                        
                     }
                 }
             }
@@ -221,6 +225,9 @@ namespace USC
 
         public void Reload()
         {
+            // Reload Sound Ãâ·Â
+            SoundManager.Singleton.PlaySFX(SFXFileName.GunReload, currentWeapon.transform.position);
+
             isReloading = true;
             characterAnimator.SetTrigger("Reload Trigger");
             leftHandRig.weight = 0f;
@@ -237,9 +244,9 @@ namespace USC
 
         public void ApplyDamage(float damage)
         {
-            curStat.HP -= damage;
+            curStat.CharacterData.HP -= damage;
 
-            if (curStat.HP <= 0)
+            if (curStat.CharacterData.HP <= 0)
             {
                 isShooting = false;
 
@@ -252,7 +259,7 @@ namespace USC
                 }
             }
 
-            OnDamaged?.Invoke(maxStat.HP, curStat.HP);
+            OnDamaged?.Invoke(maxStat.CharacterData.HP, curStat.CharacterData.HP);
         }
 
         public Transform GetBoneTransform(HumanBodyBones bone)

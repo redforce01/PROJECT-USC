@@ -1,0 +1,8 @@
+﻿{
+    "HP": 300.0,
+    "SP": 50.0,
+    "WalkSpeed": 1.0,
+    "RunSpeed": 1.5,
+    "RunStaminaCost": 1.0,
+    "StaminaRecoverySpeed": 0.5
+}

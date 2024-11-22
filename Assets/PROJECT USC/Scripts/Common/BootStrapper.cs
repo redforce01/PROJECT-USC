@@ -44,6 +44,9 @@ namespace USC
         private static void InternalBoot()
         {
             UIManager.Singleton.Initialize();
+            SoundManager.Singleton.Initialize();
+            GameDataModel.Singleton.Initialize();
+            UserDataModel.Singleton.Initialize();
 
             //TODO : Add more system initialize
 
@@ -64,6 +67,8 @@ namespace USC
                 UIManager.Show<InteractionUI>(UIList.InteractionUI);
                 UIManager.Show<MinimapUI>(UIList.MinimapUI);
                 UIManager.Show<CrosshairUI>(UIList.CrosshairUI);
+
+                SoundManager.Singleton.PlayMusic(MusicFileName.BGM_02);
             }
         }
     }

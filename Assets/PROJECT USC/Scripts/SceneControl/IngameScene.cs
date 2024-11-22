@@ -25,6 +25,8 @@ namespace USC
             UIManager.Show<InteractionUI>(UIList.InteractionUI);
             UIManager.Show<MinimapUI>(UIList.MinimapUI);
             UIManager.Show<CrosshairUI>(UIList.CrosshairUI);
+
+            SoundManager.Singleton.PlayMusic(MusicFileName.BGM_02);
         }
 
         public override IEnumerator OnEnd()
